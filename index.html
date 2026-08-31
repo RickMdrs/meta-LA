@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meta LA 2027 — Rick &amp; Biel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --ink:#0C1B33; --ink-2:#132743; --ink-3:#1C3557;
+    --line:rgba(255,255,255,.10);
+    --text:#EAF0F8; --muted:#8FA6C4;
+    --gold:#F2A93B; --mint:#4FD1A5; --coral:#FF7A6B;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--ink); color:var(--text);
+    font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+    padding:28px 20px 80px;
+  }
+  .wrap{max-width:760px;margin:0 auto}
+  .num{font-family:Archivo,Inter,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+  header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+  h1{font-family:Archivo,sans-serif;font-weight:800;font-size:26px;letter-spacing:-.03em;margin:0 0 2px}
+  .sub{color:var(--muted);font-size:13.5px}
+  .countdown{text-align:right;flex-shrink:0}
+  .countdown .d{font-family:Archivo,sans-serif;font-weight:800;font-size:30px;letter-spacing:-.03em;color:var(--gold);line-height:1}
+  .countdown .l{color:var(--muted);font-size:12.5px;margin-top:3px}
+
+  .status{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);margin-bottom:30px}
+  .status .sdot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .3s}
+  .status.ok .sdot{background:var(--mint)}
+  .status.err .sdot{background:var(--coral)}
+
+  .total{margin-bottom:38px}
+  .total-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+  .total-val{font-family:Archivo,sans-serif;font-weight:800;font-size:clamp(32px,8vw,46px);letter-spacing:-.035em;line-height:1;font-variant-numeric:tabular-nums}
+  .total-val small{font-weight:500;font-size:.42em;color:var(--muted);letter-spacing:-.01em;margin-left:6px}
+  .total-pct{font-family:Archivo,sans-serif;font-weight:600;font-size:15px;color:var(--gold);font-variant-numeric:tabular-nums}
+
+  .track{background:var(--ink-2);border-radius:8px;overflow:hidden;position:relative;border:1px solid var(--line)}
+  .track.big{height:44px}
+  .track.small{height:26px}
+  .fill{height:100%;width:0;border-radius:7px 0 0 7px;transition:width .55s cubic-bezier(.22,.68,.32,1)}
+  .fill.total{background:linear-gradient(90deg,#D98A24,var(--gold))}
+  .ticks{position:absolute;inset:0;pointer-events:none;display:flex}
+  .ticks span{flex:1;border-right:1px solid rgba(255,255,255,.055)}
+  .ticks span:last-child{border-right:0}
+
+  .total-foot{display:flex;justify-content:space-between;gap:12px;margin-top:10px;color:var(--muted);font-size:13px;flex-wrap:wrap}
+  .total-foot b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+
+  .people{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:30px}
+  @media(max-width:600px){.people{grid-template-columns:1fr}}
+  .person{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px 16px;transition:box-shadow .5s}
+  .person.pulse{box-shadow:0 0 0 2px currentColor}
+  .person-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:14px}
+  .pname{font-family:Archivo,sans-serif;font-weight:600;font-size:16.5px;letter-spacing:-.02em}
+  .badge{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+  .person-val{font-family:Archivo,sans-serif;font-weight:800;font-size:24px;letter-spacing:-.03em;margin-bottom:3px;font-variant-numeric:tabular-nums}
+  .person-goal{color:var(--muted);font-size:12.5px;margin-bottom:12px;font-variant-numeric:tabular-nums}
+  .person-foot{display:flex;justify-content:space-between;margin-top:9px;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+  .add{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:28px}
+  .add h2{font-family:Archivo,sans-serif;font-weight:600;font-size:15px;margin:0 0 14px;letter-spacing:-.02em}
+  .who{display:flex;gap:8px;margin-bottom:12px}
+  .who button{flex:1;background:var(--ink-3);border:none;color:var(--muted);padding:9px;border-radius:9px;font:inherit;font-size:13.5px;font-weight:500;cursor:pointer}
+  .who button[aria-pressed="true"]{color:#0C1B33;font-weight:600}
+  .row{display:flex;gap:8px}
+  .row input[type=number]{flex:1;min-width:0;background:var(--ink);border:1px solid var(--line);color:var(--text);padding:11px 13px;border-radius:9px;font:inherit;font-size:16px;font-variant-numeric:tabular-nums}
+  .row input::placeholder{color:#5C7091}
+  input:focus,button:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+  .btn{border:none;padding:11px 18px;border-radius:9px;font:inherit;font-weight:600;font-size:14px;cursor:pointer;flex-shrink:0}
+  .btn-in{background:var(--gold);color:#0C1B33}
+  .btn-out{background:none;border:1px solid var(--line);color:var(--coral)}
+  .btn-in:hover{filter:brightness(1.08)}
+  .btn-out:hover{border-color:var(--coral);background:rgba(255,122,107,.08)}
+  .chips{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap}
+  .chips button{background:none;border:1px solid var(--line);color:var(--muted);padding:6px 12px;border-radius:20px;font:inherit;font-size:12.5px;cursor:pointer}
+  .chips button:hover{border-color:var(--gold);color:var(--gold)}
+
+  .log h2{font-family:Archivo,sans-serif;font-weight:600;font-size:15px;margin:0 0 12px;letter-spacing:-.02em}
+  .entry{display:flex;align-items:center;gap:11px;padding:11px 2px;border-bottom:1px solid var(--line);font-size:14px}
+  .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .entry .en{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .entry .ed{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums;flex-shrink:0}
+  .entry .ea{font-family:Archivo,sans-serif;font-weight:600;font-variant-numeric:tabular-nums;flex-shrink:0}
+  .del{background:none;border:none;color:#5A7091;cursor:pointer;font-size:17px;line-height:1;padding:2px 5px;border-radius:5px;flex-shrink:0}
+  .del:hover{color:var(--coral);background:rgba(255,122,107,.1)}
+  .empty{color:var(--muted);font-size:13.5px;padding:14px 0}
+
+  .settings{margin-top:34px;padding-top:20px;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+  .settings input{background:var(--ink-2);border:1px solid var(--line);color:var(--text);padding:7px 10px;border-radius:8px;font:inherit;font-size:14px;width:120px;font-variant-numeric:tabular-nums}
+  .note{margin-top:12px;color:#6C82A3;font-size:12px;line-height:1.55}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(90px);background:var(--gold);color:#0C1B33;padding:11px 20px;border-radius:22px;font-weight:600;font-size:14px;box-shadow:0 8px 26px rgba(0,0,0,.4);transition:transform .3s ease;z-index:10;max-width:88vw;text-align:center}
+  .toast.on{transform:translateX(-50%) translateY(0)}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Los Angeles, julho de 2027</h1>
+      <div class="sub">Kaplan Westwood · 3 semanas · saindo de São Luís</div>
+    </div>
+    <div class="countdown">
+      <div class="d num" id="days">—</div>
+      <div class="l">dias até o embarque</div>
+    </div>
+  </header>
+
+  <div class="status" id="status">
+    <span class="sdot"></span><span id="statusText">Conectando</span>
+  </div>
+
+  <section class="total">
+    <div class="total-head">
+      <div class="total-val num" id="totalVal">R$ 0<small></small></div>
+      <div class="total-pct" id="totalPct">0%</div>
+    </div>
+    <div class="track big">
+      <div class="fill total" id="totalFill"></div>
+      <div class="ticks"><span></span><span></span><span></span><span></span></div>
+    </div>
+    <div class="total-foot">
+      <div>Falta <b id="totalLeft">—</b> para os dois</div>
+      <div>Ritmo necessário: <b id="pace">—</b>/mês</div>
+    </div>
+  </section>
+
+  <section class="people" id="people"></section>
+
+  <section class="add">
+    <h2>Movimentar</h2>
+    <div class="who" id="who"></div>
+    <div class="row">
+      <input type="number" id="amount" placeholder="0,00" inputmode="decimal" step="0.01" min="0" aria-label="Valor">
+      <button class="btn btn-in" id="inBtn">Guardar</button>
+      <button class="btn btn-out" id="outBtn">Tirar</button>
+    </div>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section class="log">
+    <h2>Movimentações</h2>
+    <div id="entries"></div>
+  </section>
+
+  <div class="settings">
+    <label for="goalInput">Meta de cada um</label>
+    <input type="number" id="goalInput" step="50" min="0">
+    <span>reais</span>
+  </div>
+  <p class="note" id="syncNote"></p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+/* =====================================================================
+   FIREBASE  —  edite só este bloco
+
+   1. console.firebase.google.com  ->  criar projeto (pode pular o Analytics)
+   2. menu Build > Realtime Database > Criar banco
+      - local: us-central1  |  iniciar em MODO DE TESTE
+   3. Configuracoes do projeto > Seus apps > icone Web (</>)  -> registrar app
+   4. copie o objeto firebaseConfig e cole abaixo
+   5. IMPORTANTE: em Realtime Database > Regras, troque por:
+        { "rules": { "meta-la-2027": { ".read": true, ".write": true } } }
+      (o modo de teste expira em 30 dias — sem isso o app para de salvar)
+
+   Deixando vazio, o app funciona mas salva so no navegador de cada um.
+   ===================================================================== */
+const firebaseConfig = {
+  apiKey: "",
+  authDomain: "",
+  databaseURL: "",
+  projectId: "",
+  appId: ""
+};
+const ROOM = 'meta-la-2027';
+/* ===================================================================== */
+
+const TRIP = new Date('2027-07-03T00:00:00');
+const COLORS = ['#4FD1A5', '#FF7A6B'];
+const NAMES = ['Rick', 'Biel'];
+const LS_KEY = 'meta-la-2027';
+
+let state = { goal: 35250, entries: {} };
+let selected = 0;
+let firstLoad = true;
+let prevTotals = [0, 0];
+
+const useFB = !!(firebaseConfig.databaseURL && firebaseConfig.apiKey);
+let db = null, fb = null;
+
+const brl = n => (n < 0 ? '\u2212' : '') + 'R$ ' + Math.round(Math.abs(n)).toLocaleString('pt-BR');
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const list = () => Object.entries(state.entries || {}).map(([id, e]) => ({ id, ...e }));
+const sumOf = who => list().filter(e => e.who === who).reduce((a, e) => a + e.amount, 0);
+const monthsLeft = () => Math.max(1, Math.round((TRIP - new Date()) / 2629800000));
+
+function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {} }
+
+async function init() {
+  try {
+    const local = localStorage.getItem(LS_KEY);
+    if (local) state = JSON.parse(local);
+  } catch (e) {}
+  prevTotals = [sumOf(0), sumOf(1)];
+  render();
+
+  if (!useFB) { setStatus('local'); return; }
+
+  try {
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+    fb = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+    const app = initializeApp(firebaseConfig);
+    db = fb.getDatabase(app);
+  } catch (e) {
+    setStatus('err');
+    toast('Nao consegui carregar o Firebase');
+    return;
+  }
+
+  fb.onValue(fb.ref(db, '.info/connected'), s => setStatus(s.val() ? 'ok' : 'err'));
+
+  // escuta ao vivo: o deposito do Biel cai aqui no mesmo instante
+  fb.onValue(fb.ref(db, ROOM), snap => {
+    const v = snap.val();
+    if (v) {
+      state = { goal: v.goal != null ? v.goal : 35250, entries: v.entries || {} };
+      saveLocal();
+    }
+    const totals = [sumOf(0), sumOf(1)];
+    if (!firstLoad) {
+      totals.forEach((t, i) => {
+        const diff = t - prevTotals[i];
+        if (Math.abs(diff) > 0.005 && i !== selected) {
+          toast(NAMES[i] + (diff > 0 ? ' guardou ' : ' tirou ') + brl(Math.abs(diff)));
+          pulse(i);
+        }
+      });
+    }
+    prevTotals = totals;
+    firstLoad = false;
+    render();
+  }, () => setStatus('err'));
+}
+
+function pushEntry(id, data) {
+  saveLocal();
+  if (db) fb.set(fb.ref(db, ROOM + '/entries/' + id), data).catch(() => setStatus('err'));
+}
+function removeEntry(id) {
+  saveLocal();
+  if (db) fb.remove(fb.ref(db, ROOM + '/entries/' + id)).catch(() => setStatus('err'));
+}
+function pushGoal(v) {
+  saveLocal();
+  if (db) fb.set(fb.ref(db, ROOM + '/goal'), v).catch(() => setStatus('err'));
+}
+
+function setStatus(kind) {
+  $('status').className = 'status' + (kind === 'ok' ? ' ok' : kind === 'err' ? ' err' : '');
+  $('statusText').textContent =
+    kind === 'ok'  ? 'Ao vivo \u2014 Rick e Biel veem a mesma tela' :
+    kind === 'err' ? 'Offline \u2014 o que voce lancar entra quando a conexao voltar' :
+                     'Salvando so neste navegador';
+}
+
+function render() {
+  const goal = state.goal, totalGoal = goal * 2;
+  const t = [sumOf(0), sumOf(1)];
+  const total = t[0] + t[1];
+  const pct = totalGoal ? Math.max(0, Math.min(100, total / totalGoal * 100)) : 0;
+
+  $('days').textContent = Math.max(0, Math.ceil((TRIP - new Date()) / 86400000));
+  $('totalVal').innerHTML = brl(total) + '<small>de ' + brl(totalGoal) + '</small>';
+  $('totalPct').textContent = pct.toFixed(pct >= 10 ? 0 : 1) + '%';
+  $('totalFill').style.width = pct + '%';
+  $('totalLeft').textContent = brl(Math.max(0, totalGoal - total));
+  $('pace').textContent = brl(Math.max(0, totalGoal - total) / monthsLeft());
+  if (document.activeElement !== $('goalInput')) $('goalInput').value = goal;
+
+  $('people').innerHTML = NAMES.map((name, i) => {
+    const v = t[i];
+    const pc = goal ? Math.max(0, Math.min(100, v / goal * 100)) : 0;
+    const done = v >= goal && goal > 0;
+    return '<div class="person" id="card' + i + '" style="color:' + COLORS[i] + '">' +
+      '<div class="person-top">' +
+        '<span class="pname" style="color:' + COLORS[i] + '">' + name + '</span>' +
+        (done ? '<span class="badge" style="background:' + COLORS[i] + ';color:#0C1B33">meta batida</span>' : '') +
+      '</div>' +
+      '<div class="person-val" style="color:var(--text)">' + brl(v) + '</div>' +
+      '<div class="person-goal">de ' + brl(goal) + '</div>' +
+      '<div class="track small"><div class="fill" style="width:' + pc + '%;background:' + COLORS[i] + '"></div></div>' +
+      '<div class="person-foot"><span>' + pc.toFixed(pc >= 10 ? 0 : 1) + '%</span>' +
+      '<span>' + (done ? 'completo' : 'faltam ' + brl(goal - v)) + '</span></div>' +
+    '</div>';
+  }).join('');
+
+  $('who').innerHTML = NAMES.map((n, i) =>
+    '<button data-who="' + i + '" aria-pressed="' + (selected === i) + '"' +
+    ' style="' + (selected === i ? 'background:' + COLORS[i] : '') + '">' + n + '</button>').join('');
+
+  const all = list().sort((a, b) => b.ts - a.ts);
+  $('entries').innerHTML = all.length ? all.map(e => {
+    const c = e.amount < 0 ? '#FF7A6B' : COLORS[e.who];
+    return '<div class="entry">' +
+      '<span class="dot" style="background:' + COLORS[e.who] + '"></span>' +
+      '<span class="en">' + NAMES[e.who] + (e.amount < 0 ? ' \u00b7 retirada' : '') + '</span>' +
+      '<span class="ed">' + new Date(e.ts).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) + '</span>' +
+      '<span class="ea" style="color:' + c + '">' + (e.amount < 0 ? '' : '+') + brl(e.amount) + '</span>' +
+      '<button class="del" data-del="' + esc(e.id) + '" aria-label="Apagar">\u00d7</button>' +
+    '</div>';
+  }).join('') : '<div class="empty">Nada movimentado ainda. O primeiro deposito comeca aqui.</div>';
+}
+
+function pulse(i) {
+  const el = $('card' + i);
+  if (!el) return;
+  el.classList.add('pulse');
+  setTimeout(() => el.classList.remove('pulse'), 1400);
+}
+
+function move(v, sign) {
+  if (!(v > 0)) { toast('Digite um valor'); return; }
+  const before = sumOf(selected);
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const data = { who: selected, amount: v * sign, ts: Date.now() };
+  state.entries[id] = data;
+  prevTotals[selected] = before + v * sign;
+  $('amount').value = '';
+  render();
+  pushEntry(id, data);
+  toast(sign > 0 && before < state.goal && before + v >= state.goal
+    ? NAMES[selected] + ' bateu a meta'
+    : (sign > 0 ? '+' : '\u2212') + 'R$ ' + Math.round(v).toLocaleString('pt-BR') + ' \u00b7 ' + NAMES[selected]);
+}
+
+$('inBtn').onclick  = () => move(parseFloat($('amount').value), 1);
+$('outBtn').onclick = () => move(parseFloat($('amount').value), -1);
+$('amount').onkeydown = e => { if (e.key === 'Enter') move(parseFloat($('amount').value), 1); };
+
+$('chips').innerHTML = [50, 100, 250, 500, 1000].map(v =>
+  '<button data-add="' + v + '">+ R$ ' + v.toLocaleString('pt-BR') + '</button>').join('');
+$('chips').onclick = e => { const b = e.target.closest('[data-add]'); if (b) move(+b.dataset.add, 1); };
+$('who').onclick = e => { const b = e.target.closest('[data-who]'); if (b) { selected = +b.dataset.who; render(); } };
+
+$('entries').onclick = e => {
+  const b = e.target.closest('[data-del]');
+  if (!b) return;
+  const id = b.dataset.del;
+  delete state.entries[id];
+  prevTotals = [sumOf(0), sumOf(1)];
+  render();
+  removeEntry(id);
+};
+
+$('goalInput').onchange = e => {
+  const v = parseFloat(e.target.value);
+  if (v >= 0) { state.goal = v; render(); pushGoal(v); }
+};
+
+let tt;
+function toast(msg) {
+  const el = $('toast');
+  el.textContent = msg; el.classList.add('on');
+  clearTimeout(tt); tt = setTimeout(() => el.classList.remove('on'), 2600);
+}
+
+$('syncNote').textContent = useFB
+  ? 'Tudo em tempo real: o deposito de um aparece na tela do outro na hora. Sem internet, o lancamento fica na fila e sobe sozinho quando a conexao voltar.'
+  : 'Sem Firebase configurado: cada navegador guarda os proprios dados. Veja o bloco no topo do arquivo.';
+
+init();
+</script>
+</body>
+</html>
